@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EduPredict — a machine learning dashboard that predicts student math scores from reading, writing and demographic inputs.">
+
+    <title>EduPredict · Student Performance Predictor</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+<body>
+
+<div class="background"></div>
+<div class="noise"></div>
+
+<!-- NAVBAR -->
+
+<nav class="navbar">
+
+    <div class="logo">
+        <i class="fa-solid fa-graduation-cap"></i>
+        SPP
+    </div>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <ul id="navMenu">
+        <li><a href="#">Home</a></li>
+        <li><a href="#models">Models</a></li>
+    </ul>
+
+</nav>
+
+
+<!-- HERO -->
+
+<section class="hero">
+
+    <span class="hero-eyebrow">
+        <i class="fa-solid fa-circle-nodes"></i>
+        Machine Learning Analytics
+    </span>
+
+    <h1>Predict student math scores<br>before the exam happens.</h1>
+
+    <p>
+        Feed in reading &amp; writing scores plus a few demographic signals —
+        get an instant, model-backed forecast and a breakdown of how it was reached.
+    </p>
+</section>
+
+
+
+<!-- MAIN CONTAINER -->
+
+<div class="workspace-container">
+
+
+<!-- INPUT PANEL -->
+
+<div class="panel input-panel">
+
+<h2>
+    <i class="fa-solid fa-sliders"></i>
+    Input Parameters
+</h2>
+
+<form id="predictionForm">
+
+
+<div class="input-group">
+    <label for="gender">Gender</label>
+    <select id="gender" name="gender" required>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+    </select>
+</div>
+
+
+<div class="input-group">
+    <label for="raceEthnicity">Race / Ethnicity</label>
+    <select id="raceEthnicity" name="race_ethnicity" required>
+        <option value="group A">Indian</option>
+        <option value="group B">Chinese</option>
+        <option value="group C" selected>European</option>
+        <option value="group D">African</option>
+        <option value="group E">American</option>
+    </select>
+</div>
+
+
+<div class="input-group">
+    <label for="parentalEducation">Parental Level of Education</label>
+    <select id="parentalEducation" name="parental_level_of_education" required>
+        <option value="some high school">Some High School</option>
+        <option value="high school">High School</option>
+        <option value="some college" selected>Some College</option>
+        <option value="associate's degree">Associate Degree</option>
+        <option value="bachelor's degree">Bachelor Degree</option>
+        <option value="master's degree">Master Degree</option>
+    </select>
+</div>
+
+
+<div class="input-group">
+    <label for="lunch">Lunch Type</label>
+    <select id="lunch" name="lunch" required>
+        <option value="standard">Standard</option>
+        <option value="free/reduced">Free / Reduced</option>
+    </select>
+</div>
+
+
+<div class="input-group">
+    <label for="testPrep">Test Preparation Course</label>
+    <select id="testPrep" name="test_preparation_course" required>
+        <option value="none">Not Completed</option>
+        <option value="completed">Completed</option>
+    </select>
+</div>
+
+
+<div class="input-group">
+    <label for="readingScore">Reading Score</label>
+    <input type="number" id="readingScore" name="reading_score" min="0" max="100" placeholder="75" required>
+</div>
+
+
+<div class="input-group">
+    <label for="writingScore">Writing Score</label>
+    <input type="number" id="writingScore" name="writing_score" min="0" max="100" placeholder="70" required>
+</div>
+
+
+<!-- EXTRA FEATURES -->
+
+<div class="section-divider">
+    <span>Additional Context</span>
+    <span class="divider-note">not used by the current model</span>
+</div>
+
+
+<div class="input-group">
+    <label for="studyHours">Study Hours</label>
+    <input type="number" id="studyHours" placeholder="6">
+</div>
+
+
+<div class="input-group">
+    <label for="attendance">Attendance (%)</label>
+    <input type="number" id="attendance" placeholder="90">
+</div>
+
+
+<div class="input-group">
+    <label for="sleepHours">Sleep Hours</label>
+    <input type="number" id="sleepHours" placeholder="8">
+</div>
+
+
+<div class="input-group">
+    <label for="previousAverage">Previous Average Score</label>
+    <input type="number" id="previousAverage" placeholder="80">
+</div>
+
+
+<button type="submit" id="submitBtn">
+    <span class="btn-label">Predict Score</span>
+    <i class="fa-solid fa-wand-magic-sparkles"></i>
+</button>
+
+</form>
+
+</div>
+
+<!-- ================= RESULT PANEL ================= -->
+
+<div class="panel prediction-panel">
+
+    <h2>
+        <i class="fa-solid fa-chart-column"></i>
+        Prediction Results
+    </h2>
+
+    <div class="prediction-grid">
+
+        <div class="card math-card">
+            <div class="score-ring" id="scoreRing" style="--pct:0;">
+                <svg viewBox="0 0 120 120">
+                    <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+                    <circle class="ring-fill" cx="60" cy="60" r="52"></circle>
+                </svg>
+                <div class="ring-center">
+                    <span id="predictionValue">--</span>
+                    <small>/ 100</small>
+                </div>
+            </div>
+            <h3>Predicted Math</h3>
+            <p>Model Prediction</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-book card-icon-sm"></i>
+            <h3>Reading</h3>
+            <div id="displayReading">--</div>
+            <p>Input Score</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-pen-nib card-icon-sm"></i>
+            <h3>Writing</h3>
+            <div id="displayWriting">--</div>
+            <p>Input Score</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-flask card-icon-sm"></i>
+            <h3>Science</h3>
+            <div id="displayScience">--</div>
+            <p>Calculated Score</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-scale-balanced card-icon-sm"></i>
+            <h3>Average</h3>
+            <div id="averageScore">--</div>
+            <p>Overall Performance</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-medal card-icon-sm"></i>
+            <h3>Grade</h3>
+            <div id="grade">--</div>
+            <p>Performance Level</p>
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+
+<!-- ================= MODELS ================= -->
+
+<section class="models" id="models">
+
+    <h2><i class="fa-solid fa-cubes"></i> Machine Learning Models</h2>
+    <p class="section-subtitle">Three regressors, trained on the same data, judged on the same metric.</p>
+
+    <div class="model-grid">
+
+
+        <!-- Linear Regression -->
+
+        <div class="model-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+
+            <h3>Random Forest</h3>
+
+            <div class="metric-row">
+                <span>R² Score</span>
+                <span class="metric-value">0.85</span>
+            </div>
+
+            <div class="metric-row">
+                <span>Speed</span>
+                <span class="speed-tag fast">Medium</span>
+            </div>
+
+        </div>
+
+
+
+        <!-- Decision Tree -->
+
+        <div class="model-card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-code-branch"></i>
+            </div>
+
+            <h3>Decision Tree</h3>
+
+            <div class="metric-row">
+                <span>R² Score</span>
+                <span class="metric-value">0.75</span>
+            </div>
+
+            <div class="metric-row">
+                <span>Speed</span>
+                <span class="speed-tag fast">Fast</span>
+            </div>
+
+        </div>
+
+
+
+        <!-- Random Forest -->
+
+        <div class="model-card best">
+
+            <div class="badge-ribbon">
+                BEST MODEL
+            </div>
+
+            <div class="card-icon">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+
+            <h3>Linear Regression</h3>
+
+            <div class="metric-row">
+                <span>R² Score</span>
+                <span class="metric-value">0.88
+</span>
+            </div>
+
+            <div class="metric-row">
+                <span>Speed</span>
+                <span class="speed-tag medium">Very Fast</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+    <p>
+        <i class="fa-solid fa-graduation-cap"></i>
+        EduPredict — Built with Flask · Scikit-Learn · Chart.js
+    </p>
+</footer>
+
+
+
+<!-- ================= JS ================= -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</body>
+</html>
